@@ -110,4 +110,85 @@ server.put('/projects/:id', (req, res) => {
     });
 });
 
+server.get('/actions', (req, res) => {
+  actionModel
+    .get()
+    .then((actions) => {
+      res.json(actions);
+    })
+    .catch(() => {
+      res.status(500).json({ error: 'The actions cannot be found.' });
+    });
+});
+
+server.get('/actions/:id', (req, res) => {
+  const { id } = req.params;
+  actionModel
+    .get(id)
+    .then((action) => {
+      if (action === 0) {
+        res.status(404).json({ message: 'The action doesnt exist' });
+      } else {
+        res.json(action);
+      }
+    })
+    .catch(() => {
+      res.status(500).json({ err: 'The action cannot be found.' });
+    });
+});
+
+server.post('/actions', (req, res) => {
+  const action = req.body;
+  if (!action.project_id || !action.description || !action.notes) {
+    res.status(404).json({ error: 'Provide id, description and notes.' });
+  }
+  actionModel
+    .insert(action)
+    .then((action) => {
+      res.status(201).json(action);
+    })
+    .catch(() => {
+      res.status(500).json({ error: 'There was an error while saving the action to the database' });
+    });
+});
+
+server.delete('/actions/:id', (req, res) => {
+  const { id } = req.params;
+  actionModel
+    .remove(id)
+    .then((action) => {
+      if (action === 0) {
+        res.status(404).json({ message: 'The action doesnt exist' });
+      } else {
+        res.status(200).json(action);
+      }
+    })
+    .catch(() => {
+      res.status(500).json({
+        error: 'The action could not be deleted :)'
+      });
+    });
+});
+
+server.put('/actions/:id', (req, res) => {
+  const { id } = req.params;
+  const action = req.body;
+  if (!action.project_id || !action.description || !action.notes) {
+    res.status(404).json({ error: 'Provide id, description and notes.' });
+  }
+  actionModel
+    .update(id, action)
+    .then((id) => {
+      if (id === 0) {
+        res.status(404).json({
+          message: 'The action doesnt exist'
+        });
+      }
+      res.status(200).json(id);
+    })
+    .catch(() => {
+      res.status(500).json({ error: 'The action info could not be updated :(' });
+    });
+});
+
 server.listen(5000, () => console.log('\n=== API running... ===\n'));
